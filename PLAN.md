@@ -245,7 +245,7 @@ Focused verification is `make check`; it requires the untracked local ROM and lo
 
 Migration stage 4 is complete. The C oracle now emits 73 focused vectors covering controller edge suppression, cold/warm reset ranges, timer gates, the 56-bit PRNG, both top-score comparisons, pause transitions, and all 16 SMB1 mode/task routes. Janet matches them with 135 assertions, including initialization-boundary and missing-handler failures. `src/smb/step.janet` preserves the NMI gameplay order: input, pause, top score, unpaused timers/frame counter, always-running PRNG, unpaused mode dispatch, then the host trace frame.
 
-The next implementation boundary is migration stage 5: area/enemy stream access, area initialization, metatile buffering, spawning, and scrolling. Mode routing is complete, but the routed mode/task bodies intentionally remain unavailable until their real area and screen behavior is ported; missing handlers fail rather than silently doing nothing. Full Janet frame traces begin after those handlers can execute the boot path. Hot reload currently preserves compatible state only; schema migrations, rollback after compile errors, and resource reload policy remain stage 11 work.
+Migration stage 5 is complete. ROM access validates and reads the untracked mapper-0 SMB1 image without copying PRG or CHR data. The C oracle now emits 10,243 focused rows covering all 36 world/area pointers and headers, 339 object decodes, 9,216 constructed columns across every official area, 549 enemy-stream events, 22 maze-loop outcomes, 72 direct scroll transitions, and 9 camera-handler branches. Janet matches those rows with 93,238 assertions, including metatile and collision buffers, three-slot area-object scheduling, deterministic actor spawn state, enemy placement, maze loopback, and byte-wrapped camera state. The runtime installs the real `:game/initialize-area` handler and preserves the caller-owned transition to screen routines; unported screen and game-core bodies still fail when unavailable rather than silently doing nothing. Stage 6 is the next implementation boundary: player states, physics, animation, background collision, pipes, climbing, death, and size/status transitions. Full Janet boot/play frame traces remain blocked on those later mode bodies. Hot reload schema migrations, rollback after compile errors, and resource reload policy remain stage 11 work.
 
 ## Major risks
 
@@ -266,4 +266,4 @@ The next implementation boundary is migration stage 5: area/enemy stream access,
 - [x] Port and verify the motion kernel.
 - [x] Add the minimal Jaylib and hot-reload smoke proof.
 - [x] Port and verify the frame spine.
-- [ ] Port area decoding, initialization, and scrolling.
+- [x] Port area decoding, initialization, and scrolling.

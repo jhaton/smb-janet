@@ -1,14 +1,18 @@
+(import ./area)
 (import ./modes)
 (import ./movement)
 (import ./rng)
+(import ./rom)
 (import ./state)
 (import ./step)
 
 (def default-live-step-path "src/smb/live-step.janet")
 
 (defn make-runtime
-  []
+  [&opt image]
   (def world (state/make-world))
+  (when image
+    (rom/attach! world image))
   (state/write-u8! world movement/page-base 0)
   (state/write-u8! world movement/x-position-base 32)
   (state/write-u8! world movement/x-fraction-base 0)
@@ -23,7 +27,7 @@
   (state/write-u8! world rng/register-base 0xa5)
   @{:world world
     :step nil
-    :mode-handlers @{}
+    :mode-handlers @{:game/initialize-area area/initialize!}
     :reload-generation 0
     :last-reload-frame nil})
 

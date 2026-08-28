@@ -12,8 +12,9 @@ SMB2J_NAMES := common common_sound area smb2jonly
 SMB1_OBJECTS := $(addprefix $(BUILD_REFERENCE)/smb1-,$(addsuffix .o,$(SMB1_NAMES)))
 SMB2J_OBJECTS := $(addprefix $(BUILD_REFERENCE)/smb2j-,$(addsuffix .o,$(SMB2J_NAMES)))
 REFERENCE_OBJECTS := $(SMB1_OBJECTS) $(SMB2J_OBJECTS) $(BUILD_REFERENCE)/smbcore.o
+AREA_REFERENCE_OBJECTS := $(filter-out $(BUILD_REFERENCE)/smb1-area.o,$(REFERENCE_OBJECTS))
 
-.PHONY: reference-trace trace motion-vectors frame-spine-vectors test check smoke clean
+.PHONY: reference-trace trace motion-vectors frame-spine-vectors area-vectors test check smoke clean
 
 reference-trace: build/trace-reference
 
@@ -26,7 +27,10 @@ motion-vectors: build/motion-reference
 frame-spine-vectors: build/frame-spine-reference
 	./build/frame-spine-reference > build/frame-spine-vectors.tsv
 
-test: motion-vectors frame-spine-vectors
+area-vectors: build/area-reference local/smb.nes
+	./build/area-reference local/smb.nes > build/area-vectors.tsv
+
+test: motion-vectors frame-spine-vectors area-vectors
 	jpm --local test
 
 check: trace test
@@ -43,6 +47,9 @@ build/motion-reference: tools/motion-reference.c $(REFERENCE_OBJECTS) | build
 
 build/frame-spine-reference: tools/frame-spine-reference.c $(REFERENCE_OBJECTS) | build
 	$(CC) $(CFLAGS) $(REFERENCE_CPPFLAGS) -DSMB1_MODE $< $(REFERENCE_OBJECTS) -o $@
+
+build/area-reference: tools/area-reference.c $(AREA_REFERENCE_OBJECTS) | build
+	$(CC) $(CFLAGS) $(REFERENCE_CPPFLAGS) -DSMB1_MODE $< $(AREA_REFERENCE_OBJECTS) -o $@
 
 $(BUILD_REFERENCE)/smb1-%.o: $(REFERENCE_CORE)/%.c | $(BUILD_REFERENCE)
 	$(CC) $(CFLAGS) $(REFERENCE_CPPFLAGS) -DSMB1_MODE -c $< -o $@
