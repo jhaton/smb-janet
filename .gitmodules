@@ -1,0 +1,3 @@
+[submodule "reference/smb-vanilla-port"]
+	path = reference/smb-vanilla-port
+	url = https://github.com/nukep/smb-vanilla-port.git

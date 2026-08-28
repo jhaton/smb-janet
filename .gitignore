@@ -1,0 +1,6 @@
+/local/
+/build/
+/.cache/
+/jpm_tree/
+*.trace
+*.trace.tmp

@@ -1,0 +1,53 @@
+[
+  {:offset 0x0009 :name "frame-counter"}
+  {:offset 0x000a :count 3 :name "input"}
+  {:offset 0x000e :name "game-engine-routine"}
+  {:offset 0x000f :count 7 :name "enemy.active"}
+  {:offset 0x0016 :count 6 :name "enemy.id"}
+  {:offset 0x001d :name "player.state"}
+  {:offset 0x001e :count 6 :name "enemy.state"}
+  {:offset 0x0024 :count 2 :name "fireball.state"}
+  {:offset 0x0026 :count 2 :name "block.state"}
+  {:offset 0x002a :count 9 :name "misc.state"}
+  {:offset 0x0033 :name "player.facing-direction"}
+  {:offset 0x0045 :name "player.moving-direction"}
+  {:offset 0x0057 :count 22 :name "object.x-speed"}
+  {:offset 0x006d :count 25 :name "object.page"}
+  {:offset 0x0086 :count 25 :name "object.x"}
+  {:offset 0x009f :count 22 :name "object.y-speed"}
+  {:offset 0x00b5 :count 25 :name "object.y-high"}
+  {:offset 0x00ce :count 25 :name "object.y"}
+  {:offset 0x0400 :count 22 :name "object.x-fraction"}
+  {:offset 0x0433 :count 22 :name "object.y-fraction"}
+  {:offset 0x0490 :name "player.collision-bits"}
+  {:offset 0x0491 :count 6 :name "enemy.collision-bits"}
+  {:offset 0x06fc :count 2 :name "controller.saved"}
+  {:offset 0x06ff :name "player.x-scroll"}
+  {:offset 0x0700 :name "player.absolute-x-speed"}
+  {:offset 0x0701 :name "player.friction-high"}
+  {:offset 0x0702 :name "player.friction-low"}
+  {:offset 0x0704 :name "player.swimming"}
+  {:offset 0x0705 :name "player.x-fraction"}
+  {:offset 0x071a :name "camera.left-page"}
+  {:offset 0x071b :name "camera.right-page"}
+  {:offset 0x071c :name "camera.left-x"}
+  {:offset 0x071d :name "camera.right-x"}
+  {:offset 0x0723 :name "scroll.lock"}
+  {:offset 0x0725 :name "area.current-page"}
+  {:offset 0x0726 :name "area.current-column"}
+  {:offset 0x073f :name "scroll.horizontal"}
+  {:offset 0x0740 :name "scroll.vertical"}
+  {:offset 0x0747 :name "timer.control"}
+  {:offset 0x074e :name "area.type"}
+  {:offset 0x0754 :name "player.size"}
+  {:offset 0x0755 :name "player.scroll-position"}
+  {:offset 0x0756 :name "player.status"}
+  {:offset 0x075c :name "level.number"}
+  {:offset 0x075f :name "world.number"}
+  {:offset 0x0760 :name "area.number"}
+  {:offset 0x0770 :name "mode"}
+  {:offset 0x0772 :name "mode.task"}
+  {:offset 0x077f :name "timer.interval-control"}
+  {:offset 0x0780 :count 36 :name "timer"}
+  {:offset 0x07a7 :count 7 :name "rng"}
+]
