@@ -211,11 +211,17 @@
 (each address timers/fast-timer-addresses
   (when (not= (get initialized-timer-ram address) 0)
     (set initialized-timers-cleared false)))
-(each address timers/slow-timer-addresses
-  (when (not= (get initialized-timer-ram address) 0)
+(loop [index :range [0 timers/area-initialized-slow-timer-count]]
+  (when (not= (get initialized-timer-ram
+                    (get timers/slow-timer-addresses index))
+              0)
     (set initialized-timers-cleared false)))
 (test/assert initialized-timers-cleared
-             "timer initialization must clear every declared timer")
+             "area initialization must clear the reference timer subset")
+(test/assert (= (get initialized-timer-ram 0x07a2) 0xff)
+             "area initialization must preserve DemoTimer")
+(test/assert (= (get initialized-timer-ram 0x07a3) 0xff)
+             "area initialization must preserve UnusedTimer3")
 (test/assert (= (get initialized-timer-ram 0x0788) 0xff)
              "timer initialization must preserve the unused timer gap")
 (test/assert (= (get initialized-timer-ram timers/timer-control-address) 0xff)

@@ -21,6 +21,7 @@
 (def game-timer-setting-address 0x0715)
 (def screen-left-page-address 0x071a)
 (def column-sets-address 0x071e)
+(def area-parser-task-address 0x071f)
 (def current-name-table-high-address 0x0720)
 (def current-name-table-low-address 0x0721)
 (def current-page-address 0x0725)

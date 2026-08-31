@@ -9,6 +9,7 @@
 (def slow-timer-addresses
   [0x0795 0x0796 0x0797 0x0798 0x0799 0x079a 0x079b 0x079c 0x079d
    0x079e 0x079f 0x07a0 0x07a1 0x07a2 0x07a3])
+(def area-initialized-slow-timer-count 13)
 
 (defn- decrement-nonzero!
   [ram address]
@@ -21,8 +22,8 @@
   [ram]
   (each address fast-timer-addresses
     (put ram address 0))
-  (each address slow-timer-addresses
-    (put ram address 0))
+  (loop [index :range [0 area-initialized-slow-timer-count]]
+    (put ram (get slow-timer-addresses index) 0))
   ram)
 
 (defn decrement!

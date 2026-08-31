@@ -2,6 +2,8 @@
 (import ./smb/runtime)
 (import ./smb/movement)
 (import ./smb/input)
+(import ./render/tiles)
+(import ./render/audio)
 
 (defn- smoke-frame-limit
   [args]
@@ -24,26 +26,21 @@
        (if (key-down? :a) input/button-left 0)
        (if (key-down? :d) input/button-right 0)))
 
-(defn- draw-surface
-  [app]
-  (def world (app :world))
-  (def ram (world :ram))
-  (def x (* 2 (get ram movement/x-position-base)))
-  (def y (+ 32 (* 2 (get ram movement/y-position-base))))
+(defn- smoke-controller-bits
+  [frame]
+  (cond
+    (= frame 120) input/button-start
+    (and (>= frame 300) (< frame 360))
+    (bor input/button-b input/button-right)
+    (and (>= frame 360) (< frame 368))
+    (bor input/button-a input/button-b input/button-right)
+    (and (>= frame 368) (< frame 420))
+    (bor input/button-b input/button-right)
+    true 0))
 
-  (clear-background 0x101820ff)
-  (loop [grid-x :range [0 513 32]]
-    (draw-line grid-x 32 grid-x 432 0x1d2b3aff))
-  (loop [grid-y :range [32 433 32]]
-    (draw-line 0 grid-y 512 grid-y 0x1d2b3aff))
-  (draw-line 0 416 512 416 0x8ca0b3ff)
-  (draw-rectangle x y 32 32 0xf2c94cff)
-  (draw-rectangle (+ x 7) (+ y 8) 5 5 0x101820ff)
-  (draw-rectangle (+ x 20) (+ y 8) 5 5 0x101820ff)
-  (draw-text "SMB Janet motion kernel" 16 8 20 :ray-white)
-  (draw-text (string/format "frame %d  reload generation %d  [R] reload"
-                            (world :frame) (app :reload-generation))
-             16 448 16 0x8ca0b3ff))
+(defn- draw-surface
+  [atlas app]
+  (tiles/draw! atlas (app :presentation)))
 
 (defn main
   [& args]
@@ -53,10 +50,13 @@
   (def stable-world (app :world))
   (var smoke-reloaded false)
   (var screenshot-written false)
+  (var title-screenshot-written false)
 
-  (init-window 512 480 "SMB Janet — motion kernel")
-  (set-target-fps 60)
-
+  (set-config-flags :window-highdpi)
+  (init-window 512 480 "Super Mario Bros. — Janet")
+  (set-target-fps (if max-frames 0 60))
+  (def atlas (tiles/load-atlas (app :rom)))
+  (def sound-playback (audio/start))
   (while (and (not (window-should-close))
               (or (nil? max-frames)
                   (< ((app :world) :frame) max-frames)))
@@ -73,26 +73,50 @@
       (printf "HOT_RELOAD frame=%d generation=%d world_preserved=true"
               before-frame (app :reload-generation)))
 
-    (runtime/tick! app (controller-bits) 0)
+    (runtime/tick! app (if max-frames
+                         (smoke-controller-bits frame)
+                         (controller-bits))
+                   0)
+    (audio/update! sound-playback (app :sound))
     (begin-drawing)
-    (draw-surface app)
+    (draw-surface atlas app)
     (end-drawing)
+
+    (when (and max-frames
+               (not title-screenshot-written)
+               (>= ((app :world) :frame) 30))
+      (tiles/save-screenshot atlas "build/title-smoke.png")
+      (set title-screenshot-written true))
 
     (when (and max-frames
                (not screenshot-written)
                (>= ((app :world) :frame) max-frames))
-      (take-screenshot "motion-smoke.png")
+      (tiles/save-screenshot atlas "build/motion-smoke.png")
       (set screenshot-written true)))
 
+  (def surface-width (get-render-width))
+  (def surface-height (get-render-height))
+  (def smoke-error
+    (when max-frames
+      (def ram ((app :world) :ram))
+      (cond
+        (not= (get ram 0x0770) 1) "smoke route did not enter game mode"
+        (not= (get ram 0x0772) 3) "smoke route did not reach game core"
+        (= (get ram movement/page-base) 0) "smoke route did not advance into World 1-1"
+        true nil)))
+  (tiles/unload-atlas atlas)
+  (audio/stop sound-playback)
   (close-window)
-  (when screenshot-written
-    (os/rename "motion-smoke.png" "build/motion-smoke.png"))
+  (when smoke-error
+    (error smoke-error))
   (when max-frames
     (def world (app :world))
     (def ram (world :ram))
-    (printf "SMOKE_OK frames=%d reloads=%d x=%d y=%d screenshot=%s"
+    (printf "SMOKE_OK frames=%d reloads=%d x=%d y=%d surface=%dx%d title=%s gameplay=%s"
             (world :frame)
             (app :reload-generation)
             (get ram movement/x-position-base)
             (get ram movement/y-position-base)
+            surface-width surface-height
+            (if title-screenshot-written "build/title-smoke.png" "none")
             (if screenshot-written "build/motion-smoke.png" "none"))))

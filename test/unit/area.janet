@@ -1,7 +1,9 @@
 (import spork/test)
+(import ../../src/smb/actors)
 (import ../../src/smb/area)
 (import ../../src/smb/enemies)
 (import ../../src/smb/metatiles)
+(import ../../src/smb/player)
 (import ../../src/smb/movement)
 (import ../../src/smb/rom)
 (import ../../src/smb/scroll)
@@ -110,7 +112,7 @@
      [0x0016 6 16 "enemy id"]
      [0x006e 6 17 "enemy page"]
      [0x0087 6 18 "enemy x"]
-     [0x00ce 6 19 "enemy y"]]
+     [0x00cf 6 19 "enemy y"]]
     (def actual (buffer/slice ram start (+ start length)))
     (def expected (hex-bytes (get fields index)))
     (assert-equal actual expected
@@ -299,6 +301,50 @@
       (error (string "unknown area oracle row: " line)))))
 
 (check-enemy-stream)
+
+(buffer/fill ram)
+(put ram area/current-column-address 4)
+(put ram area/current-page-address 3)
+(put ram player/addr-player-y 0x29)
+(metatiles/dispatch-object! world 0 35)
+(test/assert (= (get ram player/addr-player-y) 0x29)
+             "flagpole area object must not overwrite Mario's Y position")
+(test/assert (deep= [(get ram (+ actors/addr-enemy-flag 5))
+                     (get ram (+ actors/addr-enemy-id 5))
+                     (get ram (+ actors/addr-enemy-page 5))
+                     (get ram (+ actors/addr-enemy-x 5))
+                     (get ram (+ actors/addr-enemy-y-high 5))
+                     (get ram (+ actors/addr-enemy-y 5))]
+                    [1 actors/actor-flagpole 3 0x38 0 0x30])
+             "flagpole area object must occupy fixed slot 5 without object Y-high state")
+
+(buffer/fill ram)
+(put ram area/current-column-address 4)
+(put ram area/current-page-address 3)
+(put ram (+ actors/addr-enemy-y-high 5) 1)
+(metatiles/dispatch-object! world 0 35)
+(test/assert (= (get ram (+ actors/addr-enemy-y-high 5)) 1)
+             "flagpole spawn must preserve slot 5 Y-high state")
+
+(buffer/fill ram)
+(put ram 0x00e7 0x51)
+(put ram 0x00e8 0x85)
+(put ram area/area-object-length-base 0xff)
+(put ram area/area-object-offset-base 0)
+(put ram area/area-number-address 1)
+(put ram area/current-column-address 2)
+(put ram area/current-page-address 1)
+(metatiles/dispatch-object! world 0 0)
+(test/assert (deep= [(get ram actors/addr-enemy-flag)
+                     (get ram actors/addr-enemy-id)
+                     (get ram actors/addr-enemy-page)
+                     (get ram actors/addr-enemy-x)
+                     (get ram actors/addr-enemy-y-high)
+                     (get ram actors/addr-enemy-y)
+                     (get ram 0x0417)
+                     (get ram 0x0434)]
+                    [1 actors/actor-piranha 1 0x28 1 0x80 0x68 0x80])
+             "pipe area object must preserve Piranha up and down endpoints")
 
 (assert-equal pointer-count 36 "area pointer vector count")
 (assert-equal decoder-count 339 "area decoder vector count")
