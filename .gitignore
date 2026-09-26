@@ -2,5 +2,7 @@
 /build/
 /.cache/
 /jpm_tree/
+# janet-pm writes a bundle shim for project.janet on first use.
+/bundle/
 *.trace
 *.trace.tmp

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Build a Janet-native reconstruction of NES Super Mario Bros. with Janet owning gameplay, state, entities, collision, level logic, live redefinition, and later game-specific DSLs. Jaylib/raylib owns windowing, input, rendering, audio playback, textures, and platform integration.
+Build a Janet-native reconstruction of NES Super Mario Bros. with Janet owning gameplay, state, entities, collision, level logic, live redefinition, and later game-specific DSLs. raylib, through the janet-raylib binding, owns windowing, input, rendering, audio playback, textures, and platform integration.
 
 The port must preserve recognizable SMB1 behavior before any architectural redesign.
 
@@ -17,7 +17,7 @@ The port must preserve recognizable SMB1 behavior before any architectural redes
   - Headerless PRG+CHR SHA-1: `facee9c577a5262dbe33ac4930bb0b58c8c037f7`
   - Size: 40,976 bytes
 - First milestone: deterministic reference oracle and first-divergence comparator, then the fixed-point motion kernel.
-- Jaylib is pinned to `d7da7f14815e5ac70d02d6a942d1ae5adb04cb12`; Spork is pinned to `3918802d6b79848a3dba113b1fe2ee1a8f7b667b`.
+- janet-raylib (raylib 5.5) is pinned to `3217be8cf4ead11c638c300eb0b24337cf95cd6f`; Spork is pinned to `3918802d6b79848a3dba113b1fe2ee1a8f7b667b`; Janet is pinned to 1.42.1 in `mise.toml`. `make deps` installs them into `jpm_tree/lib`.
 - No generic ECS. Preserve SMB1's fixed object slots and update order initially.
 - No CPU, PPU rasterizer, APU emulator, 6502 registers, instruction helpers, or cycle accounting in Janet.
 
@@ -28,7 +28,7 @@ The port must preserve recognizable SMB1 behavior before any architectural redes
 3. Preserve odd-looking source logic until a deterministic trace proves a replacement equivalent.
 4. Simulation is stepped by an explicit `step!`; it never consumes wall-clock delta time.
 5. Rendering and audio playback cannot mutate gameplay state.
-6. Headless simulation must work without importing or initializing Jaylib.
+6. Headless simulation must work without importing or initializing raylib.
 7. The original ROM and ROM-derived assets remain local and untracked.
 
 ## Reference architecture
@@ -59,7 +59,7 @@ Janet
 └── later: fibers and game-specific DSLs
      │
      ▼
-Jaylib / raylib
+janet-raylib / raylib
 ├── window and input
 ├── direct tile/texture drawing
 ├── audio playback
@@ -261,13 +261,15 @@ The World 1-2 block path now preserves the two-slot block state encoding, consum
 
 The deterministic World 1 route is complete. `test/fixtures/world1-warpless.inputs` drives 7,915 frames from cold boot through World 1-1, the World 1-2 underground entrance and pipe exit, World 1-3 moving/falling/balance platforms, World 1-4 castle loops, firebars, Bowser, bridge collapse, victory messages, and World 2 initialization. `make world1-check` matches the C reference across controller input, tile visibility, 42 route fields, active actor and fireball state, and conditional platform, firebar, Bowser, bridge, and victory state. `test/unit/victory.janet` separately protects bridge removal, Bowser fall, victory setup, automatic walking, message timing, and the World 2 handoff.
 
+Rendering and audio moved from Jaylib to janet-raylib. The first 420 frames (title, Start, World 1-1, and the frame-210 hot reload) produce the same final state as before: frame 420, reload generation 2, Mario at x=28 y=176. Both smoke screenshots are pixel-identical to the Jaylib captures.
+
 ## Major risks
 
 - Janet numeric operations do not implicitly reproduce C `uint8_t` behavior.
 - RAM aliasing and fixed slot ordering are behavior, not implementation noise.
 - `smb-vanilla-port` intentionally differs from hardware for lag frames and some memory-corruption glitches.
 - Direct rendering must retain scroll, priority, offscreen, palette, and tile-order semantics without retaining a PPU.
-- Jaylib API coverage and explicit raylib resource destruction must be verified against pinned revisions.
+- Binding coverage and explicit raylib resource destruction must be verified against pinned revisions.
 - Wall-clock timing, audio callbacks, REPL pauses, and garbage collection must not affect simulation steps.
 - Hot reload can retain stale closures or invalidate resource/state layouts unless swaps occur at frame boundaries.
 - Long playthroughs do not replace targeted fixtures for rare branches and glitches.

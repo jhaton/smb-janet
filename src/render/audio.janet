@@ -1,4 +1,4 @@
-(use jaylib)
+(import raylib :as rl)
 
 (def sample-rate 48000)
 (def samples-per-frame 800)
@@ -8,10 +8,10 @@
 (defn start
   "Initialize conventional PCM playback; simulation sound state remains external."
   []
-  (init-audio-device)
-  (if (audio-device-ready?)
+  (rl/init-audio-device)
+  (if (rl/audio-device-ready?)
     (do
-      (def stream (load-audio-stream sample-rate 16 1))
+      (def stream (rl/load-audio-stream sample-rate 16 1))
       (def state
         @{:ready true
           :stream stream
@@ -20,8 +20,8 @@
           :frequency (array/new-filled voice-count 0.0)
           :remaining (array/new-filled voice-count 0)
           :noise 1})
-      (set-audio-stream-volume stream 0.35)
-      (play-audio-stream stream)
+      (rl/set-audio-stream-volume stream 0.35)
+      (rl/play-audio-stream stream)
       state)
     @{:ready false}))
 
@@ -77,14 +77,14 @@
   [audio sound]
   (when (audio :ready)
     (start-events! audio sound)
-    (when (audio-stream-processed? (audio :stream))
-      (update-audio-stream (audio :stream) (fill-samples! audio))))
+    (when (rl/audio-stream-processed? (audio :stream))
+      (rl/update-audio-stream (audio :stream) (fill-samples! audio) samples-per-frame)))
   audio)
 
 (defn stop
   [audio]
   (when (audio :ready)
-    (stop-audio-stream (audio :stream))
-    (unload-audio-stream (audio :stream)))
-  (when (audio-device-ready?)
-    (close-audio-device)))
+    (rl/stop-audio-stream (audio :stream))
+    (rl/unload-audio-stream (audio :stream)))
+  (when (rl/audio-device-ready?)
+    (rl/close-audio-device)))

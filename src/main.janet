@@ -1,4 +1,4 @@
-(use jaylib)
+(import raylib :as rl)
 (import ./smb/runtime)
 (import ./smb/movement)
 (import ./smb/input)
@@ -17,14 +17,14 @@
 
 (defn- controller-bits
   []
-  (bor (if (key-down? :z) input/button-a 0)
-       (if (key-down? :x) input/button-b 0)
-       (if (key-down? :right-shift) input/button-select 0)
-       (if (key-down? :enter) input/button-start 0)
-       (if (key-down? :w) input/button-up 0)
-       (if (key-down? :s) input/button-down 0)
-       (if (key-down? :a) input/button-left 0)
-       (if (key-down? :d) input/button-right 0)))
+  (bor (if (rl/key-down? :z) input/button-a 0)
+       (if (rl/key-down? :x) input/button-b 0)
+       (if (rl/key-down? :right-shift) input/button-select 0)
+       (if (rl/key-down? :enter) input/button-start 0)
+       (if (rl/key-down? :w) input/button-up 0)
+       (if (rl/key-down? :s) input/button-down 0)
+       (if (rl/key-down? :a) input/button-left 0)
+       (if (rl/key-down? :d) input/button-right 0)))
 
 (defn- smoke-controller-bits
   [frame]
@@ -52,16 +52,16 @@
   (var screenshot-written false)
   (var title-screenshot-written false)
 
-  (set-config-flags :window-highdpi)
-  (init-window 512 480 "Super Mario Bros. — Janet")
-  (set-target-fps (if max-frames 0 60))
+  (rl/set-config-flags :window-highdpi)
+  (rl/init-window 512 480 "Super Mario Bros. — Janet")
+  (rl/set-target-fps (if max-frames 0 60))
   (def atlas (tiles/load-atlas (app :rom)))
   (def sound-playback (audio/start))
-  (while (and (not (window-should-close))
+  (while (and (not (rl/window-should-close))
               (or (nil? max-frames)
                   (< ((app :world) :frame) max-frames)))
     (def frame ((app :world) :frame))
-    (when (or (key-pressed? :r)
+    (when (or (rl/key-pressed? :r)
               (and max-frames
                    (not smoke-reloaded)
                    (>= frame (div max-frames 2))))
@@ -78,9 +78,9 @@
                          (controller-bits))
                    0)
     (audio/update! sound-playback (app :sound))
-    (begin-drawing)
+    (rl/begin-drawing)
     (draw-surface atlas app)
-    (end-drawing)
+    (rl/end-drawing)
 
     (when (and max-frames
                (not title-screenshot-written)
@@ -94,8 +94,8 @@
       (tiles/save-screenshot atlas "build/motion-smoke.png")
       (set screenshot-written true)))
 
-  (def surface-width (get-render-width))
-  (def surface-height (get-render-height))
+  (def surface-width (rl/get-render-width))
+  (def surface-height (rl/get-render-height))
   (def smoke-error
     (when max-frames
       (def ram ((app :world) :ram))
@@ -106,7 +106,7 @@
         true nil)))
   (tiles/unload-atlas atlas)
   (audio/stop sound-playback)
-  (close-window)
+  (rl/close-window)
   (when smoke-error
     (error smoke-error))
   (when max-frames

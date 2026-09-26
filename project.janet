@@ -2,8 +2,8 @@
   :name "smb-janet"
   :description "Behavior-preserving Janet-native Super Mario Bros. reconstruction"
   :version "0.0.0"
-  :dependencies [{:url "https://github.com/janet-lang/jaylib.git"
-                  :tag "d7da7f14815e5ac70d02d6a942d1ae5adb04cb12"}
+  :dependencies [{:url "https://github.com/jhaton/janet-raylib.git"
+                  :tag "3217be8cf4ead11c638c300eb0b24337cf95cd6f"}
                  {:url "https://github.com/janet-lang/spork.git"
                   :tag "3918802d6b79848a3dba113b1fe2ee1a8f7b667b"}])
 
